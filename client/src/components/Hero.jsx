@@ -1,8 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n.jsx'
-import { img, WhatsAppIcon } from '../lib.jsx'
-
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1622287162716-f311baa1a2b8'
+import { WhatsAppIcon } from '../lib.jsx'
 
 export default function Hero({ onBook }) {
   const { t } = useLang()
@@ -10,12 +8,15 @@ export default function Hero({ onBook }) {
   return (
     <section id="top" className="relative isolate flex min-h-[640px] items-center overflow-hidden bg-ink text-white lg:min-h-[720px] h-[100svh] max-h-[900px]">
       <img
-        src={img(HERO_IMAGE, 2200)}
+        src="/images/hero.webp"
+        srcSet="/images/hero-1000.webp 1000w, /images/hero.webp 2000w"
+        sizes="100vw"
         alt=""
-        className="animate-slow-zoom absolute inset-0 -z-20 size-full object-cover object-[70%_center]"
+        className="animate-slow-zoom absolute inset-0 -z-20 size-full object-cover object-[72%_center]"
         fetchPriority="high"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/80 to-ink/10" />
+      <div className="absolute inset-0 -z-10 bg-ink/45 lg:bg-transparent" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/90 via-ink/40 to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-transparent to-ink/60" />
 
       <div className="mx-auto w-full max-w-7xl px-5 pt-20 lg:px-10">
