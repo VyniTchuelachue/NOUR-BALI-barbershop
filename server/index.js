@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { info, services, extras, inspirations, reviews } from './data/content.js'
+import { buildWhatsAppMessage, validateBooking, whatsappUrl } from './booking.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 4000
@@ -22,54 +23,6 @@ app.get('/api/content', (_req, res) => {
 // --- Réservation -----------------------------------------------------------
 // Valide la demande, l'enregistre, puis renvoie un lien WhatsApp pré-rempli.
 
-const allServices = [...services, ...extras]
-
-function validateBooking(body = {}) {
-  const errors = {}
-  const name = String(body.name ?? '').trim()
-  const serviceId = String(body.service ?? '')
-  const date = String(body.date ?? '')
-  const time = String(body.time ?? '')
-  const note = String(body.note ?? '').trim()
-  const lang = body.lang === 'en' ? 'en' : 'fr'
-
-  if (name.length < 2 || name.length > 80) errors.name = true
-  const service = allServices.find((s) => s.id === serviceId)
-  if (!service) errors.service = true
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    errors.date = true
-  } else {
-    const today = new Date().toISOString().slice(0, 10)
-    if (date < today) errors.date = true
-  }
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) errors.time = true
-  if (note.length > 300) errors.note = true
-
-  return { errors, data: { name, service, date, time, note, lang } }
-}
-
-function buildWhatsAppMessage({ name, service, date, time, note, lang }) {
-  const locale = lang === 'en' ? 'en-GB' : 'fr-FR'
-  const prettyDate = new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
-  const l = lang === 'en'
-    ? { hi: 'Hello Nour Bali 👋', want: "I'd like to book:", s: 'Service', d: 'Date', t: 'Time', n: 'Name', note: 'Note' }
-    : { hi: 'Bonjour Nour Bali 👋', want: 'Je souhaite réserver :', s: 'Prestation', d: 'Date', t: 'Heure', n: 'Nom', note: 'Note' }
-
-  return [
-    l.hi,
-    l.want,
-    `• ${l.s} : ${service.name[lang]}`,
-    `• ${l.d} : ${prettyDate}`,
-    `• ${l.t} : ${time}`,
-    `• ${l.n} : ${name}`,
-    note ? `• ${l.note} : ${note}` : null,
-  ].filter(Boolean).join('\n')
-}
-
 function saveBooking(entry) {
   let list = []
   try {
@@ -85,7 +38,6 @@ app.post('/api/booking', (req, res) => {
   const { errors, data } = validateBooking(req.body)
   if (Object.keys(errors).length) return res.status(400).json({ ok: false, errors })
 
-  const message = buildWhatsAppMessage(data)
   try {
     saveBooking({
       name: data.name,
@@ -99,7 +51,7 @@ app.post('/api/booking', (req, res) => {
     console.error('Impossible d’enregistrer la réservation :', err.message)
   }
 
-  res.json({ ok: true, whatsappUrl: `https://wa.me/${info.whatsapp}?text=${encodeURIComponent(message)}` })
+  res.json({ ok: true, whatsappUrl: whatsappUrl(buildWhatsAppMessage(data)) })
 })
 
 app.use('/api', (_req, res) => res.status(404).json({ ok: false, error: 'Not found' }))

@@ -28,3 +28,9 @@ npm start        # Express sert le site + l'API sur http://localhost:4000 (PORT 
 - Remplacer les photos d'illustration (Unsplash) par les vraies photos du salon.
 - Remplacer les avis d'exemple par de vrais avis Google.
 - Vérifier horaires et prix, renseigner Instagram/Facebook dans `info.social`.
+
+## Déploiement Vercel
+
+Importez le dépôt sur Vercel sans rien changer : `vercel.json` configure le build (`client/dist`) et les
+fonctions serverless du dossier `api/` remplacent le serveur Express. Sur Vercel, les réservations ne sont
+pas enregistrées sur disque : le message WhatsApp fait office de trace.
